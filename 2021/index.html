@@ -106,10 +106,11 @@
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      层级问题 手动调整 konva 的渲染层级 假设标线图形在整个 konva 的 stage 中的层级关系是:stage-&gt;layer1-&gt;group11-&gt;group12-&gt;dimShape，另外有一个框图形在 konva 中的层级关系是: stage-&gt;group21-&gt;frameShape。问题是作为父级的容器，group11 的 zindex 需要比 group21 的 zindex 小，即 group21 在 group11 上面显示（覆盖），但是作为子集的 dimShape 需要在 frameShape 上面显示。
+      层级问题 konva 中的图形无法像 css 一样设置全局的 z-index，只能按照设置好的层级顺序绘制。
+手动调整 konva 的渲染层级 假设标线图形在整个 konva 的 stage 中的层级关系是:stage-&gt;layer1-&gt;group11-&gt;group12-&gt;dimShape，另外有一个框图形在 konva 中的层级关系是: stage-&gt;group21-&gt;frameShape。问题是作为父级的容器，group11 的 zindex 需要比 group21 的 zindex 小，即 group21 在 group11 上面显示（覆盖），但是作为子集的 dimShape 需要在 frameShape 上面显示。
 分析 直观的方法是调整 dimShape 和 frameShape 所在的层级，但如果层级比较复杂，且需要用到父层级的 transform 等信息，需要改动的部分会比较大。 换一种方法，所有图形最终的显示是在 canvas 上面，那么如果能够控制图形绘制的顺序，那么就自然可以控制显示的层级。 下面从源码开始寻找解决方法。 关键函数 从 stage 的 batchDraw 进入
 // Stage.js batchDraw() { this.getChildren().forEach(function (layer) { layer.batchDraw(); }); return this; } 过程是遍历所有的 layer 进行 batchDraw
-// Layer.js draw() { this.drawScene(); this.drawHit(); return this; } 这两个函数就是关键
+// Layer.js draw() { this.
     </div>
   </div>
 </div>

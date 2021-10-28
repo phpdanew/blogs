@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Blogs</title>
-    <link>https://phpdanew.github.io/MyBlog/</link>
-    <description>Recent content on Blogs</description>
+    <title>blog</title>
+    <link>https://phpdanew.github.io/blog/</link>
+    <description>Recent content on blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 28 Oct 2021 13:16:01 +0800</lastBuildDate><atom:link href="https://phpdanew.github.io/MyBlog/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 28 Oct 2021 13:16:01 +0800</lastBuildDate><atom:link href="https://phpdanew.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>手动调整Konva层级</title>
-      <link>https://phpdanew.github.io/MyBlog/blog/readkonva/</link>
+      <link>https://phpdanew.github.io/blog/blog/readkonva/</link>
       <pubDate>Thu, 28 Oct 2021 13:16:01 +0800</pubDate>
       
-      <guid>https://phpdanew.github.io/MyBlog/blog/readkonva/</guid>
-      <description>层级问题 手动调整 konva 的渲染层级 假设标线图形在整个 konva 的 stage 中的层级关系是:stage-&amp;gt;layer1-&amp;gt;group11-&amp;gt;group12-&amp;gt;dimShape，另外有一个框图形在 konva 中的层级关系是: stage-&amp;gt;group21-&amp;gt;frameShape。问题是作为父级的容器，group11 的 zindex 需要比 group21 的 zindex 小，即 group21 在 group11 上面显示（覆盖），但是作为子集的 dimShape 需要在 frameShape 上面显示。
-分析 直观的方法是调整 dimShape 和 frameShape 所在的层级，但如果层级比较复杂，且需要用到父层级的 transform 等信息，需要改动的部分会比较大。 换一种方法，所有图形最终的显示是在 canvas 上面，那么如果能够控制图形绘制的顺序，那么就自然可以控制显示的层级。 下面从源码开始寻找解决方法。 关键函数 从 stage 的 batchDraw 进入
+      <guid>https://phpdanew.github.io/blog/blog/readkonva/</guid>
+      <description>层级问题 手动调整 konva 的渲染层级 分析 直观的方法是调整 dimShape 和 frameShape 所在的层级，但如果层级比较复杂，且需要用到父层级的 transform 等信息，需要改动的部分会比较大。 换一种方法，所有图形最终的显示是在 canvas 上面，那么如果能够控制图形绘制的顺序，那么就自然可以控制显示的层级。 下面从源码开始寻找解决方法。 关键函数 从 stage 的 batchDraw 进入
 // Stage.js batchDraw() { this.getChildren().forEach(function (layer) { layer.batchDraw(); }); return this; } 过程是遍历所有的 layer 进行 batchDraw
-// Layer.js draw() { this.drawScene(); this.drawHit(); return this; } 这两个函数就是关键</description>
+// Layer.js draw() { this.drawScene(); this.drawHit(); return this; } 这两个函数就是关键
+drawScene 代表了绘制图形 drawHit 代表了绘制碰撞图形
+drawScene 进入 Layer.js 的 drawScene，会遍历所有的 child，调用 child 的&amp;rsquo;drawScene&amp;rsquo;方法。而 layer 的所有 child 在添加的时候和 setZindex 的时候已经按照先后顺序排好了序，此时绘制时只需要依次调用 drawScene 即可。这也更增强了后绘制 dim 思路的信心，也就是先后的绘制时机代表了最终的图层顺序。</description>
     </item>
     
   </channel>

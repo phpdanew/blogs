@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     
-    <title>Blogs</title>
+    <title>blog</title>
     <meta name="viewport" content="width=device-width,minimum-scale=1">
     <meta name="description" content="">
     <meta name="generator" content="Hugo 0.89.0-DEV" />
@@ -14,7 +14,7 @@
     
 
     
-<link rel="stylesheet" href="/MyBlog/ananke/css/main.min.css" >
+<link rel="stylesheet" href="/blog/ananke/css/main.min.css" >
 
 
 
@@ -26,15 +26,15 @@
 
     
     
-      <link href="/MyBlog/blog/index.xml" rel="alternate" type="application/rss+xml" title="Blogs" />
-      <link href="/MyBlog/blog/index.xml" rel="feed" type="application/rss+xml" title="Blogs" />
+      <link href="/blog/blog/index.xml" rel="alternate" type="application/rss+xml" title="blog" />
+      <link href="/blog/blog/index.xml" rel="feed" type="application/rss+xml" title="blog" />
       
     
     
     <meta property="og:title" content="Blogs" />
 <meta property="og:description" content="" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://phpdanew.github.io/MyBlog/blog/" />
+<meta property="og:url" content="https://phpdanew.github.io/blog/blog/" />
 
 <meta itemprop="name" content="Blogs">
 <meta itemprop="description" content=""><meta name="twitter:card" content="summary"/>
@@ -52,9 +52,9 @@
     <div class="pb3-m pb6-l bg-black">
       <nav class="pv3 ph3 ph4-ns" role="navigation">
   <div class="flex-l justify-between items-center center">
-    <a href="/MyBlog/" class="f3 fw2 hover-white no-underline white-90 dib">
+    <a href="/blog/" class="f3 fw2 hover-white no-underline white-90 dib">
       
-        Blogs
+        blog
       
     </a>
     <div class="flex-l items-center">
@@ -101,15 +101,16 @@
   <div class="bg-white mb3 pa4 gray overflow-hidden">
     <span class="f6 db">Blog</span>
     <h1 class="f3 near-black">
-      <a href="/MyBlog/blog/readkonva/" class="link black dim">
+      <a href="/blog/blog/readkonva/" class="link black dim">
         手动调整Konva层级
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      层级问题 手动调整 konva 的渲染层级 假设标线图形在整个 konva 的 stage 中的层级关系是:stage-&gt;layer1-&gt;group11-&gt;group12-&gt;dimShape，另外有一个框图形在 konva 中的层级关系是: stage-&gt;group21-&gt;frameShape。问题是作为父级的容器，group11 的 zindex 需要比 group21 的 zindex 小，即 group21 在 group11 上面显示（覆盖），但是作为子集的 dimShape 需要在 frameShape 上面显示。
-分析 直观的方法是调整 dimShape 和 frameShape 所在的层级，但如果层级比较复杂，且需要用到父层级的 transform 等信息，需要改动的部分会比较大。 换一种方法，所有图形最终的显示是在 canvas 上面，那么如果能够控制图形绘制的顺序，那么就自然可以控制显示的层级。 下面从源码开始寻找解决方法。 关键函数 从 stage 的 batchDraw 进入
+      层级问题 手动调整 konva 的渲染层级 分析 直观的方法是调整 dimShape 和 frameShape 所在的层级，但如果层级比较复杂，且需要用到父层级的 transform 等信息，需要改动的部分会比较大。 换一种方法，所有图形最终的显示是在 canvas 上面，那么如果能够控制图形绘制的顺序，那么就自然可以控制显示的层级。 下面从源码开始寻找解决方法。 关键函数 从 stage 的 batchDraw 进入
 // Stage.js batchDraw() { this.getChildren().forEach(function (layer) { layer.batchDraw(); }); return this; } 过程是遍历所有的 layer 进行 batchDraw
 // Layer.js draw() { this.drawScene(); this.drawHit(); return this; } 这两个函数就是关键
+drawScene 代表了绘制图形 drawHit 代表了绘制碰撞图形
+drawScene 进入 Layer.js 的 drawScene，会遍历所有的 child，调用 child 的&rsquo;drawScene&rsquo;方法。而 layer 的所有 child 在添加的时候和 setZindex 的时候已经按照先后顺序排好了序，此时绘制时只需要依次调用 drawScene 即可。这也更增强了后绘制 dim 思路的信心，也就是先后的绘制时机代表了最终的图层顺序。
     </div>
   </div>
 </div>
@@ -120,8 +121,8 @@
     </main>
     <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
   <div class="flex justify-between">
-  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="https://phpdanew.github.io/MyBlog/" >
-    &copy;  Blogs 2021 
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="https://phpdanew.github.io/blog/" >
+    &copy;  blog 2021 
   </a>
     <div>
 

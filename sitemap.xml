@@ -2,13 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://phpdanew.github.io/blogs/2021/</loc>
+    <lastmod>2021-10-28T13:16:01+08:00</lastmod>
+  </url><url>
     <loc>https://phpdanew.github.io/blogs/</loc>
     <lastmod>2021-10-28T13:16:01+08:00</lastmod>
   </url><url>
-    <loc>https://phpdanew.github.io/blogs/blog/</loc>
-    <lastmod>2021-10-28T13:16:01+08:00</lastmod>
-  </url><url>
-    <loc>https://phpdanew.github.io/blogs/blog/readkonva/</loc>
+    <loc>https://phpdanew.github.io/blogs/2021/readkonva/</loc>
     <lastmod>2021-10-28T13:16:01+08:00</lastmod>
   </url><url>
     <loc>https://phpdanew.github.io/blogs/categories/</loc>

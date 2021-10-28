@@ -6,11 +6,7 @@
     
     <title>手动调整Konva层级 | blog</title>
     <meta name="viewport" content="width=device-width,minimum-scale=1">
-    <meta name="description" content="层级问题 手动调整 konva 的渲染层级 分析 直观的方法是调整 dimShape 和 frameShape 所在的层级，但如果层级比较复杂，且需要用到父层级的 transform 等信息，需要改动的部分会比较大。 换一种方法，所有图形最终的显示是在 canvas 上面，那么如果能够控制图形绘制的顺序，那么就自然可以控制显示的层级。 下面从源码开始寻找解决方法。 关键函数 从 stage 的 batchDraw 进入
-// Stage.js batchDraw() { this.getChildren().forEach(function (layer) { layer.batchDraw(); }); return this; } 过程是遍历所有的 layer 进行 batchDraw
-// Layer.js draw() { this.drawScene(); this.drawHit(); return this; } 这两个函数就是关键
-drawScene 代表了绘制图形 drawHit 代表了绘制碰撞图形
-drawScene 进入 Layer.js 的 drawScene，会遍历所有的 child，调用 child 的&rsquo;drawScene&rsquo;方法。而 layer 的所有 child 在添加的时候和 setZindex 的时候已经按照先后顺序排好了序，此时绘制时只需要依次调用 drawScene 即可。这也更增强了后绘制 dim 思路的信心，也就是先后的绘制时机代表了最终的图层顺序。">
+    <meta name="description" content="像css一样设置全局的z-index">
     <meta name="generator" content="Hugo 0.89.0-DEV" />
     
     
@@ -31,31 +27,19 @@ drawScene 进入 Layer.js 的 drawScene，会遍历所有的 child，调用 chil
     
     
     <meta property="og:title" content="手动调整Konva层级" />
-<meta property="og:description" content="层级问题 手动调整 konva 的渲染层级 分析 直观的方法是调整 dimShape 和 frameShape 所在的层级，但如果层级比较复杂，且需要用到父层级的 transform 等信息，需要改动的部分会比较大。 换一种方法，所有图形最终的显示是在 canvas 上面，那么如果能够控制图形绘制的顺序，那么就自然可以控制显示的层级。 下面从源码开始寻找解决方法。 关键函数 从 stage 的 batchDraw 进入
-// Stage.js batchDraw() { this.getChildren().forEach(function (layer) { layer.batchDraw(); }); return this; } 过程是遍历所有的 layer 进行 batchDraw
-// Layer.js draw() { this.drawScene(); this.drawHit(); return this; } 这两个函数就是关键
-drawScene 代表了绘制图形 drawHit 代表了绘制碰撞图形
-drawScene 进入 Layer.js 的 drawScene，会遍历所有的 child，调用 child 的&rsquo;drawScene&rsquo;方法。而 layer 的所有 child 在添加的时候和 setZindex 的时候已经按照先后顺序排好了序，此时绘制时只需要依次调用 drawScene 即可。这也更增强了后绘制 dim 思路的信心，也就是先后的绘制时机代表了最终的图层顺序。" />
+<meta property="og:description" content="像css一样设置全局的z-index" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://phpdanew.github.io/blogs/2021/readkonva/" /><meta property="article:section" content="2021" />
 <meta property="article:published_time" content="2021-10-28T13:16:01+08:00" />
 <meta property="article:modified_time" content="2021-10-28T13:16:01+08:00" />
 
 <meta itemprop="name" content="手动调整Konva层级">
-<meta itemprop="description" content="层级问题 手动调整 konva 的渲染层级 分析 直观的方法是调整 dimShape 和 frameShape 所在的层级，但如果层级比较复杂，且需要用到父层级的 transform 等信息，需要改动的部分会比较大。 换一种方法，所有图形最终的显示是在 canvas 上面，那么如果能够控制图形绘制的顺序，那么就自然可以控制显示的层级。 下面从源码开始寻找解决方法。 关键函数 从 stage 的 batchDraw 进入
-// Stage.js batchDraw() { this.getChildren().forEach(function (layer) { layer.batchDraw(); }); return this; } 过程是遍历所有的 layer 进行 batchDraw
-// Layer.js draw() { this.drawScene(); this.drawHit(); return this; } 这两个函数就是关键
-drawScene 代表了绘制图形 drawHit 代表了绘制碰撞图形
-drawScene 进入 Layer.js 的 drawScene，会遍历所有的 child，调用 child 的&rsquo;drawScene&rsquo;方法。而 layer 的所有 child 在添加的时候和 setZindex 的时候已经按照先后顺序排好了序，此时绘制时只需要依次调用 drawScene 即可。这也更增强了后绘制 dim 思路的信心，也就是先后的绘制时机代表了最终的图层顺序。"><meta itemprop="datePublished" content="2021-10-28T13:16:01+08:00" />
+<meta itemprop="description" content="像css一样设置全局的z-index"><meta itemprop="datePublished" content="2021-10-28T13:16:01+08:00" />
 <meta itemprop="dateModified" content="2021-10-28T13:16:01+08:00" />
-<meta itemprop="wordCount" content="439">
+<meta itemprop="wordCount" content="462">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="手动调整Konva层级"/>
-<meta name="twitter:description" content="层级问题 手动调整 konva 的渲染层级 分析 直观的方法是调整 dimShape 和 frameShape 所在的层级，但如果层级比较复杂，且需要用到父层级的 transform 等信息，需要改动的部分会比较大。 换一种方法，所有图形最终的显示是在 canvas 上面，那么如果能够控制图形绘制的顺序，那么就自然可以控制显示的层级。 下面从源码开始寻找解决方法。 关键函数 从 stage 的 batchDraw 进入
-// Stage.js batchDraw() { this.getChildren().forEach(function (layer) { layer.batchDraw(); }); return this; } 过程是遍历所有的 layer 进行 batchDraw
-// Layer.js draw() { this.drawScene(); this.drawHit(); return this; } 这两个函数就是关键
-drawScene 代表了绘制图形 drawHit 代表了绘制碰撞图形
-drawScene 进入 Layer.js 的 drawScene，会遍历所有的 child，调用 child 的&rsquo;drawScene&rsquo;方法。而 layer 的所有 child 在添加的时候和 setZindex 的时候已经按照先后顺序排好了序，此时绘制时只需要依次调用 drawScene 即可。这也更增强了后绘制 dim 思路的信心，也就是先后的绘制时机代表了最终的图层顺序。"/>
+<meta name="twitter:description" content="像css一样设置全局的z-index"/>
 
 	
   </head>
@@ -104,6 +88,10 @@ drawScene 进入 Layer.js 的 drawScene，会遍历所有的 child，调用 chil
       <div class="tc-l pv6 ph3 ph4-ns">
         
           <h1 class="f2 f1-l fw2 white-90 mb0 lh-title">手动调整Konva层级</h1>
+          
+            <h2 class="fw1 f5 f3-l white-80 measure-wide-l center lh-copy mt3 mb4">
+              像css一样设置全局的z-index
+            </h2>
           
         
       </div>
@@ -163,7 +151,8 @@ drawScene 进入 Layer.js 的 drawScene，会遍历所有的 child，调用 chil
     </header>
     <div class="nested-copy-line-height lh-copy serif f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l"><h1 id="层级问题">层级问题</h1>
 <h2 id="手动调整-konva-的渲染层级">手动调整 konva 的渲染层级</h2>
-<!-- raw HTML omitted -->
+<p>假设标线图形在整个 konva 的 stage 中的层级关系是:stage-&gt;layer1-&gt;group11-&gt;group12-&gt;dimShape，另外有一个框图形在 konva 中的层级关系是:
+stage-&gt;group21-&gt;frameShape。问题是作为父级的容器，group11 的 zindex 需要比 group21 的 zindex 小，即 group21 在 group11 上面显示（覆盖），但是作为子集的 dimShape 需要在 frameShape 上面显示。</p>
 <h2 id="分析">分析</h2>
 <p>直观的方法是调整 dimShape 和 frameShape 所在的层级，但如果层级比较复杂，且需要用到父层级的 transform 等信息，需要改动的部分会比较大。
 换一种方法，所有图形最终的显示是在 canvas 上面，那么如果能够控制图形绘制的顺序，那么就自然可以控制显示的层级。

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>手动调整Konva层级 | Blogs</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="层级问题 手动调整 konva 的渲染层级 假设标线图形在整个 konva 的 stage 中的层级关系是:stage-&gt;layer1-&gt;group11-&gt;group12-&gt;dimShape，另外有一个框图形在 konva 中的层级关系是: stage-&gt;group21-&gt;frameShape。问题是作为父级的容器，group11 的 zindex 需要比 group21 的 zindex 小，即 group21 在 group11 上面显示（覆盖），但是作为子集的 dimShape 需要在 frameShape 上面显示。
+分析 直观的方法是调整 dimShape 和 frameShape 所在的层级，但如果层级比较复杂，且需要用到父层级的 transform 等信息，需要改动的部分会比较大。 换一种方法，所有图形最终的显示是在 canvas 上面，那么如果能够控制图形绘制的顺序，那么就自然可以控制显示的层级。 下面从源码开始寻找解决方法。 关键函数 从 stage 的 batchDraw 进入
+// Stage.js batchDraw() { this.getChildren().forEach(function (layer) { layer.batchDraw(); }); return this; } 过程是遍历所有的 layer 进行 batchDraw
+// Layer.js draw() { this.drawScene(); this.drawHit(); return this; } 这两个函数就是关键">
+    <meta name="generator" content="Hugo 0.89.0-DEV" />
+    
+    
+      <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+    
+
+    
+<link rel="stylesheet" href="/MyBlog/ananke/css/main.min.css" >
+
+
+
+
+    
+      
+
+    
+
+    
+    
+    <meta property="og:title" content="手动调整Konva层级" />
+<meta property="og:description" content="层级问题 手动调整 konva 的渲染层级 假设标线图形在整个 konva 的 stage 中的层级关系是:stage-&gt;layer1-&gt;group11-&gt;group12-&gt;dimShape，另外有一个框图形在 konva 中的层级关系是: stage-&gt;group21-&gt;frameShape。问题是作为父级的容器，group11 的 zindex 需要比 group21 的 zindex 小，即 group21 在 group11 上面显示（覆盖），但是作为子集的 dimShape 需要在 frameShape 上面显示。
+分析 直观的方法是调整 dimShape 和 frameShape 所在的层级，但如果层级比较复杂，且需要用到父层级的 transform 等信息，需要改动的部分会比较大。 换一种方法，所有图形最终的显示是在 canvas 上面，那么如果能够控制图形绘制的顺序，那么就自然可以控制显示的层级。 下面从源码开始寻找解决方法。 关键函数 从 stage 的 batchDraw 进入
+// Stage.js batchDraw() { this.getChildren().forEach(function (layer) { layer.batchDraw(); }); return this; } 过程是遍历所有的 layer 进行 batchDraw
+// Layer.js draw() { this.drawScene(); this.drawHit(); return this; } 这两个函数就是关键" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://phpdanew.github.io/MyBlog/blog/readkonva/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2021-10-28T13:16:01+08:00" />
+<meta property="article:modified_time" content="2021-10-28T13:16:01+08:00" />
+
+<meta itemprop="name" content="手动调整Konva层级">
+<meta itemprop="description" content="层级问题 手动调整 konva 的渲染层级 假设标线图形在整个 konva 的 stage 中的层级关系是:stage-&gt;layer1-&gt;group11-&gt;group12-&gt;dimShape，另外有一个框图形在 konva 中的层级关系是: stage-&gt;group21-&gt;frameShape。问题是作为父级的容器，group11 的 zindex 需要比 group21 的 zindex 小，即 group21 在 group11 上面显示（覆盖），但是作为子集的 dimShape 需要在 frameShape 上面显示。
+分析 直观的方法是调整 dimShape 和 frameShape 所在的层级，但如果层级比较复杂，且需要用到父层级的 transform 等信息，需要改动的部分会比较大。 换一种方法，所有图形最终的显示是在 canvas 上面，那么如果能够控制图形绘制的顺序，那么就自然可以控制显示的层级。 下面从源码开始寻找解决方法。 关键函数 从 stage 的 batchDraw 进入
+// Stage.js batchDraw() { this.getChildren().forEach(function (layer) { layer.batchDraw(); }); return this; } 过程是遍历所有的 layer 进行 batchDraw
+// Layer.js draw() { this.drawScene(); this.drawHit(); return this; } 这两个函数就是关键"><meta itemprop="datePublished" content="2021-10-28T13:16:01+08:00" />
+<meta itemprop="dateModified" content="2021-10-28T13:16:01+08:00" />
+<meta itemprop="wordCount" content="462">
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="手动调整Konva层级"/>
+<meta name="twitter:description" content="层级问题 手动调整 konva 的渲染层级 假设标线图形在整个 konva 的 stage 中的层级关系是:stage-&gt;layer1-&gt;group11-&gt;group12-&gt;dimShape，另外有一个框图形在 konva 中的层级关系是: stage-&gt;group21-&gt;frameShape。问题是作为父级的容器，group11 的 zindex 需要比 group21 的 zindex 小，即 group21 在 group11 上面显示（覆盖），但是作为子集的 dimShape 需要在 frameShape 上面显示。
+分析 直观的方法是调整 dimShape 和 frameShape 所在的层级，但如果层级比较复杂，且需要用到父层级的 transform 等信息，需要改动的部分会比较大。 换一种方法，所有图形最终的显示是在 canvas 上面，那么如果能够控制图形绘制的顺序，那么就自然可以控制显示的层级。 下面从源码开始寻找解决方法。 关键函数 从 stage 的 batchDraw 进入
+// Stage.js batchDraw() { this.getChildren().forEach(function (layer) { layer.batchDraw(); }); return this; } 过程是遍历所有的 layer 进行 batchDraw
+// Layer.js draw() { this.drawScene(); this.drawHit(); return this; } 这两个函数就是关键"/>
+
+	
+  </head>
+
+  <body class="ma0 avenir bg-near-white">
+
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="/MyBlog/" class="f3 fw2 hover-white no-underline white-90 dib">
+      
+        Blogs
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw8 center ph3">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked">
+          
+        BLOGS
+      </aside>
+      
+
+
+
+
+  <div id="sharing" class="mt3">
+
+    
+    <a href="https://www.facebook.com/sharer.php?u=https://phpdanew.github.io/MyBlog/blog/readkonva/" class="facebook no-underline" aria-label="share on Facebook">
+      <svg height="32px"  style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M28.765,50.32h6.744V33.998h4.499l0.596-5.624h-5.095  l0.007-2.816c0-1.466,0.14-2.253,2.244-2.253h2.812V17.68h-4.5c-5.405,0-7.307,2.729-7.307,7.317v3.377h-3.369v5.625h3.369V50.32z   M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;"/></svg>
+
+    </a>
+
+    
+    
+    <a href="https://twitter.com/share?url=https://phpdanew.github.io/MyBlog/blog/readkonva/&amp;text=%e6%89%8b%e5%8a%a8%e8%b0%83%e6%95%b4Konva%e5%b1%82%e7%ba%a7" class="twitter no-underline" aria-label="share on Twitter">
+      <svg height="32px"  style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M37.167,22.283c-2.619,0.953-4.274,3.411-4.086,6.101  l0.063,1.038l-1.048-0.127c-3.813-0.487-7.145-2.139-9.974-4.915l-1.383-1.377l-0.356,1.017c-0.754,2.267-0.272,4.661,1.299,6.271  c0.838,0.89,0.649,1.017-0.796,0.487c-0.503-0.169-0.943-0.296-0.985-0.233c-0.146,0.149,0.356,2.076,0.754,2.839  c0.545,1.06,1.655,2.097,2.871,2.712l1.027,0.487l-1.215,0.021c-1.173,0-1.215,0.021-1.089,0.467  c0.419,1.377,2.074,2.839,3.918,3.475l1.299,0.444l-1.131,0.678c-1.676,0.976-3.646,1.526-5.616,1.568  C19.775,43.256,19,43.341,19,43.405c0,0.211,2.557,1.397,4.044,1.864c4.463,1.377,9.765,0.783,13.746-1.568  c2.829-1.673,5.657-5,6.978-8.221c0.713-1.716,1.425-4.851,1.425-6.354c0-0.975,0.063-1.102,1.236-2.267  c0.692-0.678,1.341-1.419,1.467-1.631c0.21-0.403,0.188-0.403-0.88-0.043c-1.781,0.636-2.033,0.551-1.152-0.402  c0.649-0.678,1.425-1.907,1.425-2.267c0-0.063-0.314,0.042-0.671,0.233c-0.377,0.212-1.215,0.53-1.844,0.72l-1.131,0.361l-1.027-0.7  c-0.566-0.381-1.361-0.805-1.781-0.932C39.766,21.902,38.131,21.944,37.167,22.283z M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4  s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/></svg>
+
+    </a>
+
+    
+    <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://phpdanew.github.io/MyBlog/blog/readkonva/&amp;title=%e6%89%8b%e5%8a%a8%e8%b0%83%e6%95%b4Konva%e5%b1%82%e7%ba%a7" class="linkedin no-underline" aria-label="share on LinkedIn">
+      <svg  height="32px"  style="enable-background:new 0 0 65 65;" version="1.1" viewBox="0 0 65 65" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <path d="M50.837,48.137V36.425c0-6.275-3.35-9.195-7.816-9.195  c-3.604,0-5.219,1.983-6.119,3.374V27.71h-6.79c0.09,1.917,0,20.427,0,20.427h6.79V36.729c0-0.609,0.044-1.219,0.224-1.655  c0.49-1.22,1.607-2.483,3.482-2.483c2.458,0,3.44,1.873,3.44,4.618v10.929H50.837z M22.959,24.922c2.367,0,3.842-1.57,3.842-3.531  c-0.044-2.003-1.475-3.528-3.797-3.528s-3.841,1.524-3.841,3.528c0,1.961,1.474,3.531,3.753,3.531H22.959z M34,64  C17.432,64,4,50.568,4,34C4,17.431,17.432,4,34,4s30,13.431,30,30C64,50.568,50.568,64,34,64z M26.354,48.137V27.71h-6.789v20.427  H26.354z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
+</svg>
+
+    </a>
+  </div>
+
+
+      <h1 class="f1 athelas mt3 mb1">手动调整Konva层级</h1>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2021-10-28T13:16:01+08:00">October 28, 2021</time>
+      
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l"><h1 id="层级问题">层级问题</h1>
+<h2 id="手动调整-konva-的渲染层级">手动调整 konva 的渲染层级</h2>
+<p>假设标线图形在整个 konva 的 stage 中的层级关系是:stage-&gt;layer1-&gt;group11-&gt;group12-&gt;dimShape，另外有一个框图形在 konva 中的层级关系是:
+stage-&gt;group21-&gt;frameShape。问题是作为父级的容器，group11 的 zindex 需要比 group21 的 zindex 小，即 group21 在 group11 上面显示（覆盖），但是作为子集的 dimShape 需要在 frameShape 上面显示。</p>
+<h2 id="分析">分析</h2>
+<p>直观的方法是调整 dimShape 和 frameShape 所在的层级，但如果层级比较复杂，且需要用到父层级的 transform 等信息，需要改动的部分会比较大。
+换一种方法，所有图形最终的显示是在 canvas 上面，那么如果能够控制图形绘制的顺序，那么就自然可以控制显示的层级。
+下面从源码开始寻找解决方法。
+<!-- raw HTML omitted --></p>
+<h2 id="关键函数">关键函数</h2>
+<p>从 stage 的 batchDraw 进入</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// Stage.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">batchDraw</span>() {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getChildren</span>().<span style="color:#a6e22e">forEach</span>(<span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">layer</span>) {
+        <span style="color:#a6e22e">layer</span>.<span style="color:#a6e22e">batchDraw</span>();
+    });
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
+    }
+</code></pre></div><p>过程是遍历所有的 layer 进行 batchDraw</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// Layer.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">draw</span>() {
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">drawScene</span>();
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">drawHit</span>();
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">this</span>;
+    }
+</code></pre></div><p>这两个函数就是关键</p>
+<p>drawScene 代表了绘制图形
+drawHit 代表了绘制碰撞图形</p>
+<h2 id="drawscene">drawScene</h2>
+<p>进入 Layer.js 的 drawScene，会遍历所有的 child，调用 child 的&rsquo;drawScene&rsquo;方法。而 layer 的所有 child 在添加的时候和 setZindex 的时候已经按照先后顺序排好了序，此时绘制时只需要依次调用 drawScene 即可。这也更增强了后绘制 dim 思路的信心，也就是先后的绘制时机代表了最终的图层顺序。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// Container.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">_drawChildren</span>(<span style="color:#a6e22e">drawMethod</span>, <span style="color:#a6e22e">canvas</span>, <span style="color:#a6e22e">top</span>) {
+    <span style="color:#75715e">//...
+</span><span style="color:#75715e"></span>    (<span style="color:#a6e22e">_a</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">children</span>) <span style="color:#f92672">===</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">_a</span> <span style="color:#f92672">===</span> <span style="color:#66d9ef">void</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">?</span> <span style="color:#66d9ef">void</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">:</span> <span style="color:#a6e22e">_a</span>.<span style="color:#a6e22e">forEach</span>(<span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">child</span>) {
+            <span style="color:#a6e22e">child</span>[<span style="color:#a6e22e">drawMethod</span>](<span style="color:#a6e22e">canvas</span>, <span style="color:#a6e22e">top</span>);
+        });
+    <span style="color:#75715e">//...
+</span><span style="color:#75715e"></span>}
+</code></pre></div><p>child 最后指代的就是一个个图形 shape</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// Shape.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">drawScene</span>(<span style="color:#a6e22e">can</span>, <span style="color:#a6e22e">top</span>) {
+    <span style="color:#75715e">//...
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">_applyLineJoin</span>(<span style="color:#66d9ef">this</span>);
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">cachingSelf</span>) {
+    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">o</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getAbsoluteTransform</span>(<span style="color:#a6e22e">top</span>).<span style="color:#a6e22e">getMatrix</span>();
+    <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">transform</span>(<span style="color:#a6e22e">o</span>[<span style="color:#ae81ff">0</span>], <span style="color:#a6e22e">o</span>[<span style="color:#ae81ff">1</span>], <span style="color:#a6e22e">o</span>[<span style="color:#ae81ff">2</span>], <span style="color:#a6e22e">o</span>[<span style="color:#ae81ff">3</span>], <span style="color:#a6e22e">o</span>[<span style="color:#ae81ff">4</span>], <span style="color:#a6e22e">o</span>[<span style="color:#ae81ff">5</span>]);
+    <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">_applyOpacity</span>(<span style="color:#66d9ef">this</span>);
+    <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">_applyGlobalCompositeOperation</span>(<span style="color:#66d9ef">this</span>);
+    }
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">hasShadow</span>) {
+    <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">_applyShadow</span>(<span style="color:#66d9ef">this</span>);
+    }
+    <span style="color:#a6e22e">drawFunc</span>.<span style="color:#a6e22e">call</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">context</span>, <span style="color:#66d9ef">this</span>);
+    <span style="color:#75715e">//...
+</span></code></pre></div><p>此处可以看到会 shape 用到所有父级的 transform 等信息，最后调用自定义的 drawFunc，就是 konva.shape 的 sceneFunc 属性。并进行绘制
+至此，就有了将 dim 图形绘制到顶层的方法。就是在 batchDraw 之后再次调用 dim 图形的 drawScene 方法，再次在 canvas 上绘制即可。</p>
+<h1 id="碰撞检测">碰撞检测</h1>
+<p>此时 dim 已经到了顶层，如果此时 dim 上面还有其他 frame 图形遮挡，会发现所有针对 dim 的交互操作（单击、双击、移动等）依然会被 frame 所拦截，感觉上 dim 只是假的在上方而已。要处理这种情况需要看一下 konva 的碰撞检测机制。
+先看 konva 的事件捕捉</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// Stage.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">_bindContentEvents</span>() {
+    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span><span style="color:#a6e22e">Konva</span>.<span style="color:#a6e22e">isBrowser</span>) {
+        <span style="color:#66d9ef">return</span>;
+    }
+    <span style="color:#a6e22e">EVENTS</span>.<span style="color:#a6e22e">forEach</span>(([<span style="color:#a6e22e">event</span>, <span style="color:#a6e22e">methodName</span>]) =&gt; {
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">content</span>.<span style="color:#a6e22e">addEventListener</span>(<span style="color:#a6e22e">event</span>, (<span style="color:#a6e22e">evt</span>) =&gt; {
+            <span style="color:#66d9ef">this</span>[<span style="color:#a6e22e">methodName</span>](<span style="color:#a6e22e">evt</span>);
+        });
+    });
+}
+</code></pre></div><p>konva 本身首先监听各种事件</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">// Stage.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">_pointerup</span>(<span style="color:#a6e22e">evt</span>) {
+    <span style="color:#75715e">//...
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_changedPointerPositions</span>.<span style="color:#a6e22e">forEach</span>((<span style="color:#a6e22e">pos</span>) =&gt; {
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">shape</span> <span style="color:#f92672">=</span> (<span style="color:#a6e22e">PointerEvents</span>.<span style="color:#a6e22e">getCapturedShape</span>(<span style="color:#a6e22e">pos</span>.<span style="color:#a6e22e">id</span>) <span style="color:#f92672">||</span>
+            <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">getIntersection</span>(<span style="color:#a6e22e">pos</span>));
+    <span style="color:#75715e">//...
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_fire</span>(<span style="color:#a6e22e">events</span>.<span style="color:#a6e22e">pointerclick</span>, {
+                    <span style="color:#a6e22e">evt</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">evt</span>,
+                    <span style="color:#a6e22e">target</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">this</span>,
+                    <span style="color:#a6e22e">currentTarget</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">this</span>,
+                    <span style="color:#a6e22e">pointerId</span>,
+                });
+    <span style="color:#75715e">//...
+</span></code></pre></div><p>以鼠标弹出事件的监听处理函数为例，主要做两件事，根据点击的坐标获取 shape，然后再抛出事件。应用程序中通过监听 konva 的事件进行后续处理。
+回到 dim 的问题上，问题应该是没有在指定的点获取到想要的 shape。那么 konva 是如何根据屏幕上某个点获取到对应的图形的？</p>
+<p>看一下 getIntersection 函数</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">//Layer.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">getIntersection</span>(<span style="color:#a6e22e">pos</span>) {
+    <span style="color:#75715e">//...
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">spiralSearchDistance</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+    <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">continueSearch</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>;
+    <span style="color:#66d9ef">while</span> (<span style="color:#66d9ef">true</span>) {
+        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">i</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; <span style="color:#a6e22e">i</span> <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">INTERSECTION_OFFSETS_LEN</span>; <span style="color:#a6e22e">i</span><span style="color:#f92672">++</span>) {
+            <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">intersectionOffset</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">INTERSECTION_OFFSETS</span>[<span style="color:#a6e22e">i</span>];
+            <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">obj</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">_getIntersection</span>({
+                <span style="color:#a6e22e">x</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">pos</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">intersectionOffset</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">spiralSearchDistance</span>,
+                <span style="color:#a6e22e">y</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">pos</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">intersectionOffset</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">spiralSearchDistance</span>,
+            });
+    <span style="color:#75715e">//...
+</span><span style="color:#75715e"></span>    }
+}
+<span style="color:#a6e22e">_getIntersection</span>(<span style="color:#a6e22e">pos</span>) {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">ratio</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">hitCanvas</span>.<span style="color:#a6e22e">pixelRatio</span>;
+
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">p</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">hitCanvas</span>.<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">getImageData</span>(Math.<span style="color:#a6e22e">round</span>(<span style="color:#a6e22e">pos</span>.<span style="color:#a6e22e">x</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">ratio</span>), Math.<span style="color:#a6e22e">round</span>(<span style="color:#a6e22e">pos</span>.<span style="color:#a6e22e">y</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">ratio</span>), <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>).<span style="color:#a6e22e">data</span>;
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">p3</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">p</span>[<span style="color:#ae81ff">3</span>];
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">p3</span> <span style="color:#f92672">===</span> <span style="color:#ae81ff">255</span>) {
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">colorKey</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Util</span>.<span style="color:#a6e22e">_rgbToHex</span>(<span style="color:#a6e22e">p</span>[<span style="color:#ae81ff">0</span>], <span style="color:#a6e22e">p</span>[<span style="color:#ae81ff">1</span>], <span style="color:#a6e22e">p</span>[<span style="color:#ae81ff">2</span>]);
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">shape</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">shapes</span>[<span style="color:#a6e22e">HASH</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">colorKey</span>];
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">shape</span>) {
+            <span style="color:#66d9ef">return</span> {
+                <span style="color:#a6e22e">shape</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">shape</span>,
+            };
+        }
+    <span style="color:#75715e">//...
+</span><span style="color:#75715e"></span>}
+
+</code></pre></div><p>整个查找的过程如下：
+从 pos 为中心点，从上下左右依次螺旋比对，spiralSearchDistance 为距离，如一开始向左 1 个像素，下一次就是 2 个像素&hellip;.
+然后比对搜索点在 hitCanvas(注意这里是 hitCanvas 而不是绘制图形所在的 sceneCanvas) 中的像素值是否是某个 shape 的 colorKey。如果是就找到了。</p>
+<h1 id="drawhit">drawHit</h1>
+<p>现在的问题就是每个 shape 的 colorKey 是如何生成，是不是就是视觉上的颜色，如果是渐变色、贴图如何处理？</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">//Shape.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">constructor</span>(<span style="color:#a6e22e">config</span>) {
+    <span style="color:#66d9ef">super</span>(<span style="color:#a6e22e">config</span>);
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">key</span>;
+    <span style="color:#66d9ef">while</span> (<span style="color:#66d9ef">true</span>) {
+        <span style="color:#a6e22e">key</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">Util</span>.<span style="color:#a6e22e">getRandomColor</span>();
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">key</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">!</span>(<span style="color:#a6e22e">key</span> <span style="color:#66d9ef">in</span> <span style="color:#a6e22e">shapes</span>)) {
+            <span style="color:#66d9ef">break</span>;
+        }
+    }
+    <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">colorKey</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">key</span>;
+    <span style="color:#a6e22e">shapes</span>[<span style="color:#a6e22e">key</span>] <span style="color:#f92672">=</span> <span style="color:#66d9ef">this</span>;
+}
+</code></pre></div><p>shape 的 colorKey 是随机生成的</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">//Shape.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">drawHit</span>(<span style="color:#a6e22e">can</span>, <span style="color:#a6e22e">top</span>, <span style="color:#a6e22e">skipDragCheck</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>) {
+    <span style="color:#75715e">//...
+</span><span style="color:#75715e"></span>    <span style="color:#a6e22e">drawFunc</span>.<span style="color:#a6e22e">call</span>(<span style="color:#66d9ef">this</span>, <span style="color:#a6e22e">context</span>, <span style="color:#66d9ef">this</span>);
+    <span style="color:#75715e">//...
+</span></code></pre></div><p>最终会调用 shape 上 hitFunc 属性。随机的颜色如何和固定的颜色相匹配？
+hitCanvas 与 sceneCanvas 会有细小而重要的不同，</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#75715e">//context.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">export</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">HitContext</span> <span style="color:#66d9ef">extends</span> <span style="color:#a6e22e">Context</span> {
+    <span style="color:#a6e22e">_fill</span>(<span style="color:#a6e22e">shape</span>) {
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">save</span>();
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">setAttr</span>(<span style="color:#e6db74">&#39;fillStyle&#39;</span>, <span style="color:#a6e22e">shape</span>.<span style="color:#a6e22e">colorKey</span>);
+        <span style="color:#a6e22e">shape</span>.<span style="color:#a6e22e">_fillFuncHit</span>(<span style="color:#66d9ef">this</span>);
+        <span style="color:#66d9ef">this</span>.<span style="color:#a6e22e">restore</span>();
+    }
+
+</code></pre></div><p>最终在 hitCanvas 上按照 shape 的随机颜色来进行绘制填充。可以想象按照层级顺序绘制的图形，最后绘制的颜色会覆盖先绘制的颜色。通过颜色就能快速判断点击了是哪个对象</p>
+<h1 id="实际问题">实际问题</h1>
+<p>drawScene 和 drawHit 目测不是同步执行的，单独执行他们时需要确保在 batchDraw 之后，否则不会有效果。比如用定时器</p>
+<ul class="pa0">
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="https://phpdanew.github.io/MyBlog/" >
+    &copy;  Blogs 2021 
+  </a>
+    <div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

@@ -36,7 +36,7 @@
 <meta itemprop="name" content="手动调整Konva层级">
 <meta itemprop="description" content="像css一样设置全局的z-index"><meta itemprop="datePublished" content="2021-10-28T13:16:01+08:00" />
 <meta itemprop="dateModified" content="2021-10-28T13:16:01+08:00" />
-<meta itemprop="wordCount" content="467">
+<meta itemprop="wordCount" content="471">
 <meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="手动调整Konva层级"/>
 <meta name="twitter:description" content="像css一样设置全局的z-index"/>
@@ -282,7 +282,8 @@ hitCanvas 与 sceneCanvas 会有细小而重要的不同，</p>
 
 </code></pre></div><p>最终在 hitCanvas 上按照 shape 的随机颜色来进行绘制填充。可以想象按照层级顺序绘制的图形，最后绘制的颜色会覆盖先绘制的颜色。通过颜色就能快速判断点击了是哪个对象</p>
 <h1 id="实际问题">实际问题</h1>
-<p>drawScene 和 drawHit 目测不是同步执行的，单独执行他们时需要确保在 batchDraw 之后，否则不会有效果。比如用定时器。</p>
+<p>1,drawScene 和 drawHit 目测不是同步执行的，单独执行他们时需要确保在 batchDraw 之后，否则不会有效果。比如用定时器。</p>
+<p>2,目测在拖动 canvas 等行为时依旧会触发 batchDraw，导致调整的层级失效，目前先忽略了。</p>
 <ul class="pa0">
   
 </ul>
